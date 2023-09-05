@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú de Facturación</title>
+  <!-- Enlace a los estilos de Bootstrap 4 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Enlace a la biblioteca de iconos Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Enlace a los estilos de DataTables -->
+  <link href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+  <!-- Estilos CSS personalizados -->
+  <style>
+    /* Alinea verticalmente el icono con el texto */
+    .nav-link i {
+        vertical-align: middle;
+        margin-right: 5px; /* Añade espacio entre el icono y el texto */
+    }
+
+    #facturasTable thead tr {
+        background-color: lightblue; /* Cambia el color de fondo a azul cielo claro */
+    }
+
+    /* Estilos condicionales para la columna ESTADO */
+    .estado-Pagada {
+        background-color: green; /* Fondo verde para "Pagada" */
+    }
+
+    .estado-Pendiente {
+        background-color: yellow; /* Fondo amarillo para "Pendiente" */
+    }
+
+    .estado-Anulada {
+        background-color: red; /* Fondo rojo para "Anulada" */
+    }
+
+    /* Estilos para la columna OPCIONES */
+    #facturasTable tbody td:last-child {
+        min-width: 100px; /* Ancho mínimo de la celda de opciones */
+        padding: 10px; /* Ajusta el espaciado interno de la celda */
+    }
+  </style>
+</head>
+<body>
+    <!-- Navbar de Bootstrap 4 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Inicio</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item ">
+                    <a class="nav-link" href="/factura/crear">Crear Factura</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/factura/listar">Lista de Facturas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Usuarios </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
+                    <a class="nav-link" th:href="@{/logout}">
+                        <i class="material-icons">person</i> Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-10">
+        <h1>Facturas</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover dataTable" id="facturasTable">
+                <thead>
+                    <tr>
+                        <th>NºFACTURA</th>
+                        <th>FECHA</th>
+                        <th>CLIENTE</th>
+                        <th>DOMICILIO</th>
+                        <th>POBLACION</th>
+                        <th>DNI</th>
+                        <th>ESTADO</th>
+                        <th>OPCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Iteración sobre las facturas -->
+                    <tr th:each="factura : ${facturas}">
+                        <!-- Celdas de datos -->
+                        <td th:text="${factura.id}">NºFACTURA</td>
+                        <td th:text="${factura.fecha}">FECHA</td>
+                        <td th:text="${factura.cliente}">CLIENTE</td>
+                        <td th:text="${factura.domicilio}">DOMICILIO</td>
+                        <td th:text="${factura.poblacion}">POBLACION</td>
+                        <td th:text="${factura.dni}">DNI</td>
+                        <td th:class="${factura.estado == 'Pagada' ? 'estado-Pagada' : (factura.estado == 'Pendiente' ? 'estado-Pendiente' : 'estado-Anulada')}" th:text="${factura.estado}">ESTADO</td>
+                        <!-- Celdas de opciones -->
+                        <td>
+                            <a th:href="@{/factura/ver/{id}(id=${factura.id})}" style="color: rgb(245, 6, 245);">
+                                <i class="material-icons" style="color: green;">description</i> Ver factura
+                            </a>
+                            <br></br>
+                            <a th:href="@{/factura/editar/{id}(id=${factura.id})}" style="color: rgb(13, 160, 223);">
+                                <i class="material-icons" style="color: blue;">edit</i> Editar
+                            </a>
+                            <br></br>
+                            <a th:href="@{/factura/eliminar/{id}(id=${factura.id})}"
+                                onclick="return confirm('¿Estás seguro de que quieres eliminar esta factura?')"
+                                style="color: rgb(241, 0, 0);">
+                                <i class="material-icons" style="color: red;">delete</i> Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap 4, DataTables y jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Inicializar la tabla DataTables con configuración
+            $('#facturasTable').DataTable({
+                // Agregar "responsive" para que la tabla sea más sensible a los cambios en el tamaño de la ventana
+                responsive: true,
+                // Configurar la posición de la columna de opciones
+                columnDefs: [
+                    {
+                        targets: -1, // Última columna
+                        orderable: false, // No permitir ordenar por esta columna
+                    },
+                ],
+            });
+        });
+    </script>
+</body>
+</html>

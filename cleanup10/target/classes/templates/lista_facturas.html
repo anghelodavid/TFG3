@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <!-- Configuración del documento -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factura de Limpieza</title>
+  
+  <!-- Agrega la referencia a Bootstrap 4 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Contenedor principal -->
+  <div class="container mt-5">
+    <!-- Fila para centrar contenido -->
+    <div class="row justify-content-center">
+      <!-- Columna principal -->
+      <div class="col-md-10">
+        <!-- Tarjeta Bootstrap -->
+        <div class="card">
+          <!-- Encabezado de la tarjeta -->
+          <div class="card-header" style="background-color: #98e2e2;">
+            <!-- Título principal -->
+            <h1 class="text-center">Factura de Limpieza</h1>
+          </div>
+          <!-- Cuerpo de la tarjeta -->
+          <div class="card-body">
+            <!-- Información de la empresa -->
+            <div class="mb-3">
+              <strong>Empresa de Limpieza Profesional</strong><br>
+              Dirección: Calle Principal 123, Ciudad<br>
+              Teléfono: 123-456789
+            </div>
+            <!-- Tabla para detalles de la factura -->
+            <table class="table table-bordered">
+              <tr>
+                <td class="text-right"><strong>NºFactura:</strong></td>
+                <td><span th:text="${factura.id}"></span></td>
+                <td class="text-right"><strong>Fecha:</strong></td>
+                <td><span th:text="${factura.fecha}"></span></td>
+                <td class="text-right"><strong>Estado:</strong></td>
+                <td><span th:text="${factura.estado}"></span></td>
+              </tr>
+              <tr>
+                <td class="text-right"><strong>Cliente:</strong></td>
+                <td><span th:text="${factura.cliente}"></span></td>
+                <td class="text-right"><strong>DNI:</strong></td>
+                <td><span th:text="${factura.dni}"></span></td>
+                <td class="text-right"><strong>Domicilio:</strong></td>
+                <td><span th:text="${factura.domicilio}"></span></td>
+              </tr>
+              <tr>
+                <td class="text-right"><strong>Población:</strong></td>
+                <td><span th:text="${factura.poblacion}"></span></td>
+              </tr>
+            </table>
+            <!-- Tabla para detalles de trabajos -->
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Trabajos realizados</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Iterar a través de los trabajos en la factura -->
+                <tr th:each="trabajo : ${factura.trabajos}">
+                  <td class="quantity">
+                    <!-- Mostrar la descripción del trabajo -->
+                    <span th:text="${trabajo.descripcionTrabajo}"></span>
+                  </td>
+                  <td class="price center-align">
+                    <!-- Mostrar el precio del trabajo -->
+                    <span id="precio-trabajo" th:text="${trabajo.precioTrabajo}"></span> €
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Tabla para detalles de precios -->
+            <table class="table table-bordered items">
+              <tbody>
+                <tr>
+                  <td><strong>BASE IMPONIBLE</strong></td>
+                  <td><span id="base-imponible-amount" class="price center-align"></span></td>
+                </tr>
+                <tr>
+                  <td><strong>I.V.A.......21%</strong></td>
+                  <td><span id="iva-amount" class="price center-align"></span></td>
+                </tr>
+                <tr>
+                  <td><strong>TOTAL A PAGAR</strong></td>
+                  <td><span id="total-pagar-amount" class="price center-align"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agrega la referencia a Bootstrap 4 JS (jQuery y Bootstrap JS) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+  <!-- Script para calcular los totales -->
+  <script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+      // Obtener todas las celdas de precioTrabajo y sumar los valores
+      const precioTrabajoCells = document.querySelectorAll('.price span#precio-trabajo');
+      let totalPrecioTrabajo = 0;
+      precioTrabajoCells.forEach(cell => {
+        totalPrecioTrabajo += parseFloat(cell.textContent);
+      });
+
+      // Actualizar la base imponible con la suma calculada
+      const baseImponibleAmount = document.querySelector('#base-imponible-amount');
+      baseImponibleAmount.textContent = totalPrecioTrabajo.toFixed(2) + ' €';
+
+      // Calcular y actualizar el IVA y el total a pagar
+      const ivaAmount = document.querySelector('#iva-amount');
+      const totalPagarAmount = document.querySelector('#total-pagar-amount');
+      const ivaRate = 0.21; // Tasa de IVA del 21%
+
+      const iva = totalPrecioTrabajo * ivaRate;
+      const totalPagar = totalPrecioTrabajo + iva;
+
+      ivaAmount.textContent = iva.toFixed(2) + ' €';
+      totalPagarAmount.textContent = totalPagar.toFixed(2) + ' €';
+    });
+  </script>
+</body>
+</html>

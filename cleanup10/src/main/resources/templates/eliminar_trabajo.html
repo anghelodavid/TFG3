@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Configuración del documento -->
+    <meta charset="UTF-8">
+    <title>Editar Factura</title>
+    
+    <!-- Enlaces a archivos CSS y JavaScript externos -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Bootstrap CSS -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Iconos de Material Icons -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script> <!-- Popper.js -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> <!-- Bootstrap JavaScript -->
+    
+    <!-- Estilos CSS personalizados -->
+    <style>
+        /* Estilos personalizados para los campos de trabajo */
+        .trabajo {
+            margin-bottom: 10px;
+        }
+        /* Estilo para campos de formulario con ancho del 50% */
+        .form-control-half {
+            width: 50%;
+        }
+        /* Estilo para el botón */
+        #boton {
+            background-color: rgb(111, 244, 111); /* Cambiar al color deseado */
+            color: white; /* Cambiar el color del texto si es necesario */
+            /* Otros estilos de diseño si los necesitas */
+        }
+        /* Alinea verticalmente el icono con el texto en la barra de navegación */
+        .nav-link i {
+            vertical-align: middle;
+            margin-right: 5px; /* Añade espacio entre el icono y el texto */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar de Bootstrap 4 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Inicio</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/factura/crear">Crear Factura</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/factura/listar">Lista de Facturas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Usuarios</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
+                    <a class="nav-link" th:href="@{/logout}">
+                        <i class="material-icons">person</i> Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Contenido principal -->
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="container text-center w-100"> <!-- Envolver todo en un contenedor y ajustar al 100% de ancho -->
+            <!-- Título de la página -->
+            <h2 class="mt-4 mb-4">Editar Factura</h2>
+            
+            <!-- Formulario para editar una factura -->
+            <form th:object="${factura}" th:action="@{/factura/editar}" method="post">
+                <!-- Botón para guardar los cambios -->
+                <button type="submit" id="boton" class="btn btn-success mt-3">Guardar Cambios</button>
+                
+                <!-- Contenedor principal del formulario -->
+                <div class="container">
+                    <div class="form-group">
+                        <!-- Campo oculto para el ID de la factura -->
+                        <input type="hidden" th:field="*{id}" />
+                    </div>
+                    
+                    <!-- Campo para ingresar la fecha -->
+                    <div class="form-group">
+                        <label for="fecha" class="text-right">Fecha:</label>
+                        <input type="text" class="form-control form-control-half mx-auto" id="fecha"  th:field="*{fecha}" required pattern="\d{2}-\d{2}-\d{4}" placeholder="Ej:01-01-2000"><br>
+                    </div>
+                    
+                    <!-- Campo para ingresar el cliente -->
+                    <div class="form-group">
+                        <label for="cliente" class="text-right">Cliente:</label>
+                        <input type="text" class="form-control form-control-half mx-auto" id="cliente" th:field="*{cliente}" />
+                    </div>
+                    
+                    <!-- Campo para ingresar el DNI -->
+                    <div class="form-group">
+                        <label for="dni" class="text-right">DNI:</label>
+                        <input type="text" class="form-control form-control-half mx-auto" id="dni" th:field="*{dni}" required pattern="[0-9]{8}[A-Z]" placeholder="Ej: 11111111A"><br>
+                    </div>
+                    
+                    <!-- Campo para ingresar el domicilio -->
+                    <div class="form-group">
+                        <label for="domicilio" class="text-right">Domicilio:</label>
+                        <input type="text" class="form-control form-control-half mx-auto" id="domicilio" th:field="*{domicilio}" />
+                    </div>
+                    
+                    <!-- Campo para ingresar la población -->
+                    <div class="form-group">
+                        <label for="poblacion" class="text-right">Población:</label>
+                        <input type="text" class="form-control form-control-half mx-auto" id="poblacion" th:field="*{poblacion}" />
+                    </div>
+                    
+                    <!-- Campo para seleccionar el estado -->
+                    <div class="form-group">
+                        <label for="estado" class="text-right">Estado:</label>
+                        <select id="estado" name="estado" class="form-control form-control-half mx-auto" th:field="*{estado}" required>
+                            <option value="Pagada">Pagada</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Anulada">Anulada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Campos para los trabajos asociados -->
+                <div id="trabajosContainer" class="container">
+                    <h2>Trabajos:</h2>
+                    <!-- Contenedor para trabajos dinámicos -->
+                    <div th:each="trabajo, iterStat : *{trabajos}" class="trabajo form-group">
+                        <!-- Campo para descripción del trabajo -->
+                        <label class="text-right">Descripción del Trabajo:</label>
+                        <input type="text" class="form-control campo-generado form-control-half mx-auto" th:field="*{trabajos[__${iterStat.index}__].descripcionTrabajo}" />
+                        
+                        <!-- Campo para precio del trabajo -->
+                        <label class="text-right">Precio del Trabajo:</label>
+                        <input type="text" class="form-control campo-generado form-control-half mx-auto" th:field="*{trabajos[__${iterStat.index}__].precioTrabajo}" />
+                        
+                        <!-- Enlace para eliminar el trabajo -->
+                        <td>
+                            <a th:href="@{/factura/eliminarTrabajo/{id}(id=${trabajo.id})}" class="btn btn-danger">Eliminar</a>
+                        </td>
+                    </div>
+                    
+                    <!-- Botón para agregar un nuevo trabajo -->
+                    <button type="button" id="agregarTrabajo" class="btn btn-primary">Agregar Trabajo</button>
+                </div>
+                
+                <!-- Script JavaScript para agregar trabajos dinámicamente -->
+                <script>
+                    const trabajosContainer = document.getElementById('trabajosContainer');
+                    const agregarTrabajoBtn = document.getElementById('agregarTrabajo');
+                    
+                    // Obtener el número total de trabajos existentes al cargar la página
+                    let trabajoIndex = trabajosContainer.querySelectorAll('.trabajo').length;
+                
+                    agregarTrabajoBtn.addEventListener('click', () => {
+                        // HTML para agregar un nuevo trabajo al formulario
+                        const nuevoTrabajoHtml = `
+                            <div class="trabajo form-group">
+                                <h3>Trabajo ${trabajoIndex + 1}</h3>
+                                <label class="text-right">Descripción del Trabajo:</label>
+                                <input type="text" class="form-control campo-generado form-control-half mx-auto" name="trabajos[${trabajoIndex}].descripcionTrabajo" required><br>
+                                
+                                <label class="text-right">Precio del Trabajo:</label>
+                                <input type="number" class="form-control campo-generado form-control-half mx-auto" name="trabajos[${trabajoIndex}].precioTrabajo" required step="any"><br>
+                            </div>
+                            `;
+    
+                // Agrega el nuevo trabajo al contenedor
+                trabajosContainer.insertAdjacentHTML('beforeend', nuevoTrabajoHtml);
+                trabajoIndex++;
+            });
+            </script>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

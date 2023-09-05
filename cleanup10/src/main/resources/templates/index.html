@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <!-- Configuración del documento -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú de Facturación</title>
+  
+  <!-- Enlaces a archivos CSS y estilos personalizados -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- Estilos de Bootstrap 4 -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Iconos de Material Icons -->
+  
+  <!-- Estilos CSS personalizados -->
+  <style>
+    /* Alinea verticalmente el icono con el texto en la barra de navegación */
+    .nav-link i {
+      vertical-align: middle;
+      margin-right: 5px; /* Añade espacio entre el icono y el texto */
+    }
+  </style>
+</head>
+<body>
+  <!-- Barra de navegación Bootstrap 4 -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Inicio</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <!-- Elementos del menú -->
+        <li class="nav-item ">
+          <a class="nav-link" href="/factura/crear">Crear Factura</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/factura/listar">Lista de Facturas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/users">Usuarios</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <!-- Elementos de la barra de navegación derecha -->
+        <li class="nav-item" th:if="${#authorization.expression('isAuthenticated')}">
+          <a class="nav-link" th:href="@{/logout}">
+            <i class="material-icons">person</i> Cerrar sesión
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+      
+  <!-- Contenido de la página -->
+  <div class="container mt-4">
+    <!-- Título principal -->
+    <h1>Bienvenido al Sistema de Facturación</h1>
+    <!-- Mensaje de bienvenida -->
+    <p>Selecciona una opción del menú para comenzar.</p>
+  </div>
+
+  <!-- Enlaces a los scripts de Bootstrap y jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> <!-- jQuery necesario para Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script> <!-- Popper.js para Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script> <!-- Bootstrap JavaScript -->
+</body>
+</html>

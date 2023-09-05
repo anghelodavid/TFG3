@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Configuración del documento -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Factura</title> <!-- Título de la página -->
+
+    <!-- Enlaces a archivos CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet"> <!-- Bootstrap CSS -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <!-- Iconos de Material Icons -->
+
+    <!-- Estilos CSS personalizados -->
+    <style>
+        /* Estilos personalizados para la página */
+        .custom-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Estilos para botones Agregar Trabajo y Crear Factura */
+        #agregarTrabajo {
+            background-color: rgb(33, 194, 248); /* Cambiar al color deseado */
+            color: white; /* Cambiar el color del texto si es necesario */
+            /* Otros estilos de diseño si los necesitas */
+        }
+        #crearfactura {
+            background-color: rgb(111, 244, 111); /* Cambiar al color deseado */
+            color: white; /* Cambiar el color del texto si es necesario */
+            /* Otros estilos de diseño si los necesitas */
+        }
+
+        /* Alinea verticalmente el icono con el texto en la barra de navegación */
+        .nav-link i {
+            vertical-align: middle;
+            margin-right: 5px; /* Añade espacio entre el icono y el texto */
+        }
+
+        /* Estilos para el contenedor de trabajos con barra de desplazamiento */
+        #trabajosContainer {
+            max-height: 200px; /* Establece la altura máxima para el contenedor de trabajos */
+            overflow-y: auto; /* Añade una barra de desplazamiento vertical cuando los trabajos superen la altura máxima */
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación Bootstrap 4 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- Logo e ícono de hamburguesa para dispositivos móviles -->
+        <a class="navbar-brand" href="/">Inicio</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Elementos de navegación en la barra -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/factura/crear">Crear Factura</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/factura/listar">Lista de Facturas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Usuarios</a>
+                </li>
+            </ul>
+            
+            <!-- Elemento de navegación para cerrar sesión (visible cuando el usuario está autenticado) -->
+            <ul class="navbar-nav">
+                <li class="nav-item" th:if="${#authorization.expression('isAuthenticated()')}">
+                    <a class="nav-link" th:href="@{/logout}">
+                        <i class="material-icons">person</i> Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container-fluid d-flex justify-content-center align-items-center vh-100">
+        <div class="card custom-form">
+            <!-- Título de la página -->
+            <h1 class="text-center mb-4">Crear Factura</h1>
+
+            <!-- Formulario para crear una factura -->
+            <form th:object="${factura}" th:action="@{/factura/crear}" method="post">
+                <!-- Etiqueta y campo para ingresar el cliente -->
+                <label for="cliente">Cliente:</label>
+                <input type="text" id="cliente" th:field="*{cliente}" required><br>
+
+                <!-- Etiqueta y campo para ingresar el DNI -->
+                <label for="dni">DNI:</label>
+                <input type="text" id="dni" th:field="*{dni}" required pattern="[0-9]{8}[A-Z]" placeholder="Ej: 11111111A"><br>
+
+                <!-- Etiqueta y campo para ingresar la fecha -->
+                <label for="fecha">Fecha:</label>
+                <input type="text" id="fecha" name="fecha" th:field="*{fecha}" required pattern="\d{2}-\d{2}-\d{4}" placeholder="Ej: 01-01-2000"><br>
+
+                <!-- Etiqueta y campo para ingresar la población -->
+                <label for="poblacion">Población:</label>
+                <input type="text" id="poblacion" th:field="*{poblacion}" required><br>
+
+                <!-- Etiqueta y campo para ingresar el domicilio -->
+                <label for="domicilio">Domicilio:</label>
+                <input type="text" id="domicilio" th:field="*{domicilio}" required><br>
+                
+                <!-- Etiqueta y lista desplegable para seleccionar el estado -->
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado" th:field="*{estado}" required>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
+                
+                <!-- Espacio en blanco -->
+                <h2></h2>
+
+                <!-- Contenedor para trabajos dinámicos -->
+                <div id="trabajosContainer">
+                    <!-- Los trabajos se agregarán dinámicamente aquí -->
+                </div>
+
+                <!-- Botón para agregar un nuevo trabajo -->
+                <button type="button" id="agregarTrabajo" class="btn btn-primary">Agregar Trabajo</button><br>
+
+                <!-- Botón para crear la factura (se mostrará una alerta si es necesario) -->
+                <button type="submit" id="crearfactura" class="btn btn-success mt-3">Crear Factura</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script JavaScript -->
+    <script>
+        // Código JavaScript para agregar trabajos dinámicamente y validar el formulario
+        const trabajosContainer = document.getElementById('trabajosContainer');
+        const agregarTrabajoBtn = document.getElementById('agregarTrabajo');
+        let trabajoIndex = 0;
+
+        // Evento click para agregar un nuevo trabajo
+        agregarTrabajoBtn.addEventListener('click', () => {
+            const nuevoTrabajoHtml = `
+                <!-- Elemento HTML para un nuevo trabajo -->
+                <div>
+                    <h3>Trabajo ${trabajoIndex + 1}</h3>
+                    <label for="trabajos[${trabajoIndex}].descripcionTrabajo">Descripción:</label>
+                    <input type="text" name="trabajos[${trabajoIndex}].descripcionTrabajo" required><br>
+
+                    <label for="trabajos[${trabajoIndex}].precioTrabajo">Precio:</label>
+                    <input type="number" class="form-control campo-generado form-control-half mx-auto" name="trabajos[${trabajoIndex}].precioTrabajo" required step="any"><br>
+                </div>
+            `;
+
+            // Agrega el nuevo trabajo al contenedor
+            trabajosContainer.insertAdjacentHTML('beforeend', nuevoTrabajoHtml);
+            trabajoIndex++;
+        });
+
+        // Función para verificar si todos los campos requeridos están llenos
+        function verificarCampos() {
+            const camposRequeridos = document.querySelectorAll('input[required], select[required]');
+            let todosCamposLlenos = true;
+
+            camposRequeridos.forEach((campo) => {
+                if (!campo.value.trim()) {
+                    todosCamposLlenos = false;
+                }
+            });
+
+            return todosCamposLlenos;
+        }
+
+        // Función para validar el formato del campo DNI (8 dígitos seguidos de una letra)
+        function validarDNI(dni) {
+            const regex = /^[0-9]{8}[A-Z]$/;
+            return regex.test(dni);
+        }
+
+        // Función para mostrar una alerta si es necesario antes de enviar el formulario
+        function mostrarAlerta(event) {
+            if (!verificarCampos()) {
+                alert("Rellene todos los campos requeridos antes de crear la factura.");
+                event.preventDefault(); // Evitar que el formulario se envíe si faltan campos
+            } else {
+                const dniInput = document.getElementById('dni');
+                if (!validarDNI(dniInput.value.trim())) {
+                    alert("DNI incorrecto. Debe tener 8 dígitos seguidos de una letra (Ej: 11111111A).");
+                    event.preventDefault(); // Evitar que el formulario se envíe si el DNI es incorrecto
+                } else {
+                    alert("Se ha creado tu factura exitosamente");
+                }
+            }
+        }
+
+        // Agrega un evento onclick al botón "Crear Factura" para llamar a la función mostrarAlerta
+        const crearFacturaBtn = document.getElementById('crearfactura');
+        crearFacturaBtn.addEventListener('click', mostrarAlerta);
+    </script>
+</body>
+</html>
